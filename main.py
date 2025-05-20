@@ -84,6 +84,45 @@ def user_create():
     # И отдаём 200 при успехе
     return make_response(200, "OK")
 
+@app.route('/user', methods=['GET'])
+def user_get():
+
+    # Парсим запрос
+    params = json.loads(request.data)
+
+    # Проверяем поля
+    if "user_name" not in params:
+        return make_response(400, "Field 'user_name' does not exist")
+
+    # Вытаскиваем имя пользователя
+    user_name = params["user_name"]
+
+    # Формируем запрос на выборку
+    sql = f'SELECT * FROM users WHERE user_name = \'{user_name}\''
+
+    # Вытаскиваем пользователя
+    try:
+        db = make_db()
+        cur = db.cursor()
+        cur.execute(sql)
+
+        row = cur.fetchone()
+        if row is None:
+            return make_response(404, "Not found")
+
+        # Формируем объект
+        user = {}
+        user['user_name'] = user_name
+        user['first_name'] = row[1]
+        user['last_name'] = row[2]
+        user['email'] = row[3]
+        user['phone'] = row[4]
+
+        # И отдаём его клиенту
+        return Response(status=200, mimetype="application/json", response=json.dumps(user))
+
+    except Exception as e:
+        return make_response(400, str(e))
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8000)
