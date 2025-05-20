@@ -78,6 +78,7 @@ def user_create():
         db = make_db()
         db.cursor().execute(sql)
         db.commit()
+        db.close()
     except Exception as e:
         return make_response(400, str(e))
 
@@ -105,8 +106,9 @@ def user_get():
         db = make_db()
         cur = db.cursor()
         cur.execute(sql)
-
         row = cur.fetchone()
+        db.close()
+
         if row is None:
             return make_response(404, "Not found")
 
@@ -145,11 +147,12 @@ def user_delete():
         db = make_db()
         db.cursor().execute(sql)
         db.commit()
+        db.close()
 
     except Exception as e:
         return make_response(400, str(e))
 
-    return make_response(204)
+    return make_response(200, 'OK')
 
 @app.route('/user', methods=['PUT'])
 def user_update():
@@ -201,6 +204,8 @@ def user_update():
             return make_response(404, "Not found")
 
         db.commit()
+        db.close()
+
     except Exception as e:
         return make_response(400, str(e))
 
