@@ -151,5 +151,61 @@ def user_delete():
 
     return make_response(204)
 
+@app.route('/user', methods=['PUT'])
+def user_update():
+
+    # Парсим запрос
+    params = json.loads(request.data)
+
+    # Проверяем поля
+    if "user_name" not in params:
+        return make_response(400, "Field 'user_name' does not exist")
+
+    if "first_name" not in params:
+        return make_response(400, "Field 'first_name' does not exist")
+
+    if "last_name" not in params:
+        return make_response(400, "Field 'last_name' does not exist")
+
+    if "email" not in params:
+        return make_response(400, "Field 'email' does not exist")
+
+    if "phone" not in params:
+        return make_response(400, "Field 'phone' does not exist")
+
+    # Вытаскиваем значения полей
+    user_name = params["user_name"]
+    first_name = params["first_name"]
+    last_name = params["last_name"]
+    email = params["email"]
+    phone = params["phone"]
+
+    # Формируем запрос на вставку
+    sql = f'''
+        UPDATE users SET
+        first_name = '{first_name}',
+        last_name = '{last_name}',
+        email = '{email}',
+        phone = '{phone}'
+        WHERE user_name = '{user_name}'
+    '''
+
+    # Добавляем пользователя
+    try:
+        db = make_db()
+        cur = db.cursor()
+        cur.execute(sql)
+
+        # Если оператор UPDATE не затронул ни одной строки - скажем клиенту что не нашли такого пользователя
+        if cur.rowcount == 0:
+            return make_response(404, "Not found")
+
+        db.commit()
+    except Exception as e:
+        return make_response(400, str(e))
+
+    # И отдаём 200 при успехе
+    return make_response(200, "OK")
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8000)
