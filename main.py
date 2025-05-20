@@ -124,5 +124,32 @@ def user_get():
     except Exception as e:
         return make_response(400, str(e))
 
+@app.route('/user', methods=['DELETE'])
+def user_delete():
+
+    # Парсим запрос
+    params = json.loads(request.data)
+
+    # Проверяем поля
+    if "user_name" not in params:
+        return make_response(400, "Field 'user_name' does not exist")
+
+    # Вытаскиваем имя пользователя
+    user_name = params["user_name"]
+
+    # Формируем запрос на удаление
+    sql = f'DELETE FROM users WHERE user_name = \'{user_name}\''
+
+    # Удаляем пользователя
+    try:
+        db = make_db()
+        db.cursor().execute(sql)
+        db.commit()
+
+    except Exception as e:
+        return make_response(400, str(e))
+
+    return make_response(204)
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8000)
